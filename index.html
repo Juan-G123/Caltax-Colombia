@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Calculadora de IVA y retención en la fuente Colombia 2026 — Tarifas DIAN actualizadas" />
+  <title>Calculadora Tributaria Colombia 2026</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f5f3;
+      --surface: #ffffff;
+      --surface2: #f0efed;
+      --border: #e2e1de;
+      --text: #1a1a18;
+      --text2: #6b6b67;
+      --text3: #9e9e9a;
+      --green: #1d9e75;
+      --green-bg: #e1f5ee;
+      --red: #d85a30;
+      --red-bg: #faece7;
+      --amber: #ba7517;
+      --amber-bg: #faeeda;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1.5rem 1rem 4rem;
+    }
+
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      background: var(--text);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    header h1 { font-size: 17px; font-weight: 600; line-height: 1.2; }
+    header p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .prefix {
+      font-size: 16px;
+      color: var(--text2);
+      font-weight: 500;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 16px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"]:focus { border-color: var(--text); }
+    input[type="text"]::placeholder { color: var(--text3); }
+
+    .suffix { font-size: 13px; color: var(--text2); }
+
+    .legible {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 6px;
+      min-height: 16px;
+    }
+
+    .radio-group { display: flex; flex-direction: column; gap: 10px; }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text);
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+    }
+
+    .radio-option:hover { border-color: var(--text); background: var(--bg); }
+    .radio-option input { accent-color: var(--text); width: 16px; height: 16px; }
+
+    .radio-option .pct {
+      margin-left: auto;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+      background: var(--surface2);
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .check-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .check-option input { accent-color: var(--text); width: 16px; height: 16px; }
+
+    .resultado { display: none; }
+
+    .desglose { display: flex; flex-direction: column; }
+
+    .fila {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .fila:last-child { border-bottom: none; }
+    .fila .concepto { color: var(--text2); }
+    .fila .valor { font-weight: 500; }
+    .fila .valor.rojo { color: var(--red); }
+    .fila .valor.verde { color: var(--green); }
+
+    .metricas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .metrica {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    .metrica p { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+    .metrica span { font-size: 22px; font-weight: 600; }
+    .metrica span.verde { color: var(--green); }
+    .metrica span.rojo { color: var(--red); }
+
+    .alerta {
+      display: none;
+      background: var(--amber-bg);
+      border: 1px solid #e8c97a;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--amber);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .nota {
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+
+    .placeholder {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--text3);
+    }
+
+    .placeholder svg {
+      width: 40px;
+      height: 40px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      margin-bottom: 10px;
+    }
+
+    .placeholder p { font-size: 14px; }
+
+    footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      font-size: 12px;
+      color: var(--text3);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><path d="M9 14l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 7h6M9 10h4"/></svg>
+    </div>
+    <div>
+      <h1>Calculadora Tributaria Colombia</h1>
+      <p>IVA y Retención en la Fuente — DIAN 2026</p>
+    </div>
+  </header>
+
+  <div class="card">
+    <p class="card-label">Valor del servicio o producto (sin IVA)</p>
+    <div class="input-row">
+      <span class="prefix">$</span>
+      <input type="text" id="valorInput" placeholder="Ej: 1.000.000" oninput="onValorInput(this)" />
+      <span class="suffix">COP</span>
+    </div>
+    <p class="legible" id="valor-legible"></p>
+  </div>
+
+  <div class="card">
+    <p class="card-label">Tipo de operación</p>
+    <div class="radio-group">
+      <label class="radio-option">
+        <input type="radio" name="tipo" value="servicio_declarante" onchange="calcular()" checked />
+        Servicio — declarante de renta
+        <span class="pct">4%</span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="tipo" value="servicio_no_declarante" onchange="calcular()" />
+        Servicio — no declarante de renta
+        <span class="pct">6%</span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="tipo" value="compra" onchange="calcular()" />
+        Compra de bien mueble
+        <span class="pct">2.5%</span>
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="tipo" value="honorarios" onchange="calcular()" />
+        Honorarios profesionales
+        <span class="pct">10%</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="card-label">Opciones adicionales</p>
+    <label class="check-option">
+      <input type="checkbox" id="aplicaIVA" onchange="calcular()" checked />
+      Aplica IVA (19%)
+    </label>
+    <label class="check-option" style="margin-bottom: 0;">
+      <input type="checkbox" id="tieneRetenciones" onchange="toggleRetenciones()" />
+      Tengo retenciones acumuladas para cruzar
+    </label>
+    <div id="retencionesAcum" style="display: none; margin-top: 14px;">
+      <div class="input-row">
+        <span class="prefix">$</span>
+        <input type="text" id="retencionesInput" placeholder="Ej: 80.000" oninput="onRetInput(this)" />
+        <span class="suffix">COP</span>
+      </div>
+      <p class="legible" id="ret-legible"></p>
+    </div>
+  </div>
+
+  <div class="resultado" id="resultado">
+    <div class="card">
+      <p class="card-label">Desglose</p>
+      <div class="desglose">
+        <div class="fila">
+          <span class="concepto">Valor base</span>
+          <span class="valor" id="r-base">$0</span>
+        </div>
+        <div class="fila" id="fila-iva">
+          <span class="concepto">IVA (19%)</span>
+          <span class="valor" id="r-iva">$0</span>
+        </div>
+        <div class="fila">
+          <span class="concepto" id="label-rte">Retención en la fuente</span>
+          <span class="valor rojo" id="r-rte">-$0</span>
+        </div>
+        <div class="fila">
+          <span class="concepto">Total factura</span>
+          <span class="valor" id="r-factura">$0</span>
+        </div>
+        <div class="fila" id="fila-acum" style="display: none;">
+          <span class="concepto">Retenciones acumuladas</span>
+          <span class="valor verde" id="r-acum">-$0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="metricas">
+      <div class="metrica">
+        <p>Lo que recibes</p>
+        <span class="verde" id="r-recibes">$0</span>
+      </div>
+      <div class="metrica">
+        <p>Deuda tributaria neta</p>
+        <span id="r-deuda">$0</span>
+      </div>
+    </div>
+
+    <div class="alerta" id="alerta-umbral"></div>
+
+    <div class="nota" id="nota-uvt"></div>
+  </div>
+
+  <div class="placeholder" id="placeholder">
+    <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
+    <p>Ingresa un valor para calcular</p>
+  </div>
+
+  <footer>
+    Calculadora informativa — siempre verifica con un contador.<br/>
+    Tarifas DIAN vigentes 2026 · UVT $52.374
+  </footer>
+
+</div>
+<script>
+  const UVT = 52374;
+  let valorBase = 0;
+  let valorRet = 0;
+
+  function parsear(str) {
+    return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+
+  function formatear(str) {
+    const n = str.replace(/[^0-9]/g, '');
+    if (!n) return '';
+    return parseInt(n, 10).toLocaleString('es-CO');
+  }
+
+  function fmt(n) {
+    return '$' + Math.round(n).toLocaleString('es-CO');
+  }
+
+  function onValorInput(el) {
+    const pos = el.selectionStart;
+    const antes = el.value.length;
+    el.value = formatear(el.value);
+    const despues = el.value.length;
+    el.setSelectionRange(pos + (despues - antes), pos + (despues - antes));
+    valorBase = parsear(el.value);
+    const leg = document.getElementById('valor-legible');
+    leg.textContent = valorBase > 0 ? 'Valor: $' + valorBase.toLocaleString('es-CO') + ' COP' : '';
+    calcular();
+  }
+
+  function onRetInput(el) {
+    el.value = formatear(el.value);
+    valorRet = parsear(el.value);
+    const leg = document.getElementById('ret-legible');
+    leg.textContent = valorRet > 0 ? 'Valor: $' + valorRet.toLocaleString('es-CO') + ' COP' : '';
+    calcular();
+  }
+
+  function toggleRetenciones() {
+    const cb = document.getElementById('tieneRetenciones');
+    document.getElementById('retencionesAcum').style.display = cb.checked ? 'block' : 'none';
+    calcular();
+  }
+
+  function getTarifa() {
+    const tipo = document.querySelector('input[name="tipo"]:checked').value;
+    return {
+      servicio_declarante:    { pct: 0.04,  label: 'Retención en la fuente (4%)',   min: 4 },
+      servicio_no_declarante: { pct: 0.06,  label: 'Retención en la fuente (6%)',   min: 4 },
+      compra:                 { pct: 0.025, label: 'Retención en la fuente (2.5%)', min: 10 },
+      honorarios:             { pct: 0.10,  label: 'Retención en la fuente (10%)',  min: 0 },
+    }[tipo];
+  }
+
+  function calcular() {
+    if (valorBase <= 0) {
+      document.getElementById('resultado').style.display = 'none';
+      document.getElementById('placeholder').style.display = 'block';
+      return;
+    }
+
+    const aplicaIVA = document.getElementById('aplicaIVA').checked;
+    const tarifa = getTarifa();
+    const minPesos = tarifa.min * UVT;
+    const iva = aplicaIVA ? valorBase * 0.19 : 0;
+    const totalFactura = valorBase + iva;
+    const aplicaRte = valorBase >= minPesos;
+    const rte = aplicaRte ? valorBase * tarifa.pct : 0;
+    const recibe = totalFactura - rte;
+    const tieneAcum = document.getElementById('tieneRetenciones').checked;
+    const acum = tieneAcum ? valorRet : 0;
+    const deudaNeta = Math.max(0, rte - acum);
+
+    document.getElementById('r-base').textContent = fmt(valorBase);
+    document.getElementById('r-iva').textContent = fmt(iva);
+    document.getElementById('fila-iva').style.display = aplicaIVA ? 'flex' : 'none';
+    document.getElementById('label-rte').textContent = tarifa.label;
+    document.getElementById('r-rte').textContent = aplicaRte ? '-' + fmt(rte) : '$0 (bajo el umbral)';
+    document.getElementById('r-factura').textContent = fmt(totalFactura);
+    document.getElementById('r-recibes').textContent = fmt(recibe);
+
+    const filaAcum = document.getElementById('fila-acum');
+    if (tieneAcum && acum > 0) {
+      filaAcum.style.display = 'flex';
+      document.getElementById('r-acum').textContent = '-' + fmt(acum);
+    } else {
+      filaAcum.style.display = 'none';
+    }
+
+    const deudaEl = document.getElementById('r-deuda');
+    deudaEl.textContent = fmt(deudaNeta);
+    deudaEl.className = deudaNeta > 0 ? 'rojo' : 'verde';
+
+    const alerta = document.getElementById('alerta-umbral');
+    if (!aplicaRte && tarifa.min > 0) {
+      alerta.style.display = 'block';
+      alerta.textContent = `El valor (${fmt(valorBase)}) no supera el umbral mínimo de ${tarifa.min} UVT (${fmt(minPesos)}), por lo tanto no aplica retención en la fuente.`;
+    } else {
+      alerta.style.display = 'none';
+    }
+
+    document.getElementById('nota-uvt').textContent = `UVT 2026: $${UVT.toLocaleString('es-CO')} — Resolución DIAN 000238 del 15 dic 2025. La retención se aplica solo sobre la base gravable sin incluir IVA.`;
+
+    document.getElementById('resultado').style.display = 'block';
+    document.getElementById('placeholder').style.display = 'none';
+  }
+</script>
+</body>
+</html>

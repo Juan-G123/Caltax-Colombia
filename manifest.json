@@ -1,0 +1,22 @@
+{
+  "name": "Calculadora Tributaria Colombia 2026",
+  "short_name": "Tributaria CO",
+  "description": "Calcula IVA y retención en la fuente con tarifas DIAN 2026",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f5f3",
+  "theme_color": "#1a1a18",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/1a1a18/ffffff?text=CT",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/1a1a18/ffffff?text=CT",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
