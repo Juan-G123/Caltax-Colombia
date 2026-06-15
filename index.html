@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Calculadora de IVA, retención en la fuente e impuesto al consumo Colombia 2026 — Tarifas tomadas directamente de la DIAN" />
+  <title>CaltaxCO — Calculadora Tributaria Colombia 2026</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f5f3;
+      --surface: #ffffff;
+      --surface2: #f0efed;
+      --border: #e2e1de;
+      --text: #1a1a18;
+      --text2: #6b6b67;
+      --text3: #9e9e9a;
+      --green: #1d9e75;
+      --red: #d85a30;
+      --amber: #ba7517;
+      --amber-bg: #faeeda;
+      --amber-border: #e8c97a;
+      --blue: #185fa5;
+      --blue-bg: #e6f1fb;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 1.5rem 1rem 5rem; }
+    .container { max-width: 580px; margin: 0 auto; }
+    a { color: var(--text2); text-decoration: underline; }
+    input[type="text"] { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 16px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s; width: 100%; }
+    input[type="text"]:focus { border-color: var(--text); }
+    input[type="text"]::placeholder { color: var(--text3); }
+    input[type="radio"], input[type="checkbox"] { accent-color: var(--text); width: 16px; height: 16px; flex-shrink: 0; }
+    button { font-family: 'DM Sans', sans-serif; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; color: var(--text); transition: background 0.15s; }
+    button:hover { background: var(--surface2); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+    .card-label { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+    .input-row { display: flex; align-items: center; gap: 8px; }
+    .prefix { font-size: 16px; color: var(--text2); font-weight: 500; }
+    .suffix { font-size: 13px; color: var(--text2); }
+    .legible { font-size: 12px; color: var(--text3); margin-top: 6px; min-height: 16px; }
+    .option-row { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; transition: border-color 0.15s; }
+    .option-row:last-child { margin-bottom: 0; }
+    .option-row:hover { border-color: var(--text); }
+    .badge { margin-left: auto; font-size: 12px; font-weight: 500; background: var(--surface2); padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+    .fila { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .fila:last-child { border-bottom: none; }
+    .fila .concepto { color: var(--text2); }
+    .fila .valor { font-weight: 500; }
+    .metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+    .metrica { background: var(--surface2); border-radius: var(--radius-sm); padding: 1rem; }
+    .metrica p { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+    .metrica span { font-size: 22px; font-weight: 600; }
+    .alerta { display: none; background: var(--amber-bg); border: 1px solid var(--amber-border); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; color: var(--amber); margin-bottom: 1rem; line-height: 1.5; }
+    .nota { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 12px; color: var(--text2); line-height: 1.6; }
+    .nota a { color: var(--text2); }
+    .btn-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+    .btn-row button { flex: 1; padding: 10px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .placeholder { text-align: center; padding: 3rem 0; color: var(--text3); }
+    .placeholder svg { width: 40px; height: 40px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; }
+    .placeholder p { font-size: 14px; }
+    .tabs { display: flex; border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; margin-bottom: 1.5rem; -webkit-overflow-scrolling: touch; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { flex: 1 0 auto; min-width: 90px; padding: 10px 4px; font-size: 13px; background: var(--surface2); border: none; border-right: 1px solid var(--border); cursor: pointer; color: var(--text2); font-family: 'DM Sans', sans-serif; transition: background 0.15s; white-space: nowrap; }
+    .tab:last-child { border-right: none; }
+    .tab.active { background: var(--surface); color: var(--text); font-weight: 500; }
+    .wiki-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 10px; }
+    .wiki-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 10px; }
+    .wiki-card p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 10px; }
+    .wiki-tag { background: var(--surface2); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+    .wiki-fuente { font-size: 11px; color: var(--text3); }
+    .hist-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-bottom: 10px; }
+    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+    .dash-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+    .dash-valor { font-size: 19px; font-weight: 600; word-break: break-word; }
+    .dash-bar-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .dash-bar-label { font-size:12px; color:var(--text2); width:64px; flex-shrink:0; }
+    .dash-bar-track { flex:1; background:var(--surface2); border-radius:6px; height:18px; overflow:hidden; }
+    .dash-bar-fill { background: var(--text); height:100%; border-radius:6px; transition: width 0.3s; }
+    .dash-bar-valor { font-size:11px; color:var(--text3); width:80px; text-align:right; flex-shrink:0; }
+    .dash-act-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; }
+    .dash-act-row:last-child { border-bottom:none; }
+    .dash-act-row .dash-act-meta { font-size:11px; color:var(--text3); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-day-name { font-size: 11px; color: var(--text3); text-align: center; padding: 4px 0; font-weight: 500; }
+    .cal-day { position: relative; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 6px; cursor: default; }
+    .cal-day.empty { visibility: hidden; }
+    .cal-day.hoy { background: var(--surface2); font-weight: 600; }
+    .cal-day .cal-dot { position: absolute; bottom: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
+    .cal-day.tiene-evento { cursor: default; background: var(--blue-bg); }
+    .cal-evento-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .cal-evento-row:last-child { border-bottom: none; }
+    .cal-evento-fecha { background: var(--surface2); border-radius: var(--radius-sm); padding: 4px 8px; font-size: 11px; font-weight: 500; flex-shrink: 0; white-space: nowrap; }
+    .cal-evento-row .cal-evento-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .cal-tag { font-size: 10px; padding: 2px 6px; border-radius: 10px; background: var(--blue-bg); color: var(--blue); display: inline-block; margin-top: 2px; }
+    .cal-recordatorio-opt { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; cursor: pointer; }
+    #recordatorio-banner { background: var(--blue-bg); border: 1px solid var(--blue); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 1rem; font-size: 13px; color: var(--blue); }
+    #recordatorio-banner .rb-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    #recordatorio-banner button { border: none; background: transparent; color: var(--blue); font-size: 18px; line-height: 1; padding: 0 0 0 8px; flex-shrink: 0; }
+    .reporte-mes { margin-bottom: 14px; }
+    .reporte-mes:last-child { margin-bottom: 0; }
+    .reporte-mes-titulo { font-size: 13px; font-weight: 500; margin-bottom: 6px; text-transform: capitalize; }
+    .reporte-comp { font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+    .reporte-comp.up { background: #1d9e751a; color: var(--green); }
+    .reporte-comp.down { background: #d85a301a; color: var(--red); }
+    .hist-filtro.active { background: var(--text); color: var(--surface); }
+    .hist-card .hist-acciones { display:flex; gap:8px; margin-top:10px; }
+    .hist-card .hist-acciones button { flex:1; font-size:11px; padding:6px 4px; }
+    .modal-row { display:flex; justify-content:space-between; padding:6px 0; font-size:13px; border-bottom:1px solid var(--border); }
+    .modal-row:last-child { border-bottom:none; }
+    .modal-row .concepto { color: var(--text2); }
+    .bienvenida { text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem 1.5rem; margin-bottom: 1.5rem; }
+    .bienvenida h1 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+    .bienvenida p { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.6; }
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+    .feature { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px; font-size: 12px; color: var(--text2); text-align: center; }
+    .feature svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; display: block; margin: 0 auto 6px; }
+    .btn-primary { background: var(--text); color: white; border-color: var(--text); padding: 12px 32px; font-size: 15px; font-weight: 500; border-radius: var(--radius-sm); }
+    .btn-primary:hover { background: #333; }
+    footer { text-align: center; margin-top: 2.5rem; font-size: 12px; color: var(--text3); }
+    footer a { color: var(--text3); }
+    .negocio-desc { font-size: 12px; color: var(--text3); display: block; margin-top: 2px; }
+    .dian-badge { display: flex; align-items: center; gap: 8px; background: var(--blue-bg); border: 1px solid #b5d4f4; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--blue); margin-bottom: 1rem; }
+    .dian-badge svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="bienvenida" id="bienvenida">
+    <svg style="width:48px;height:48px;stroke:var(--text);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 16px;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 14l2 2 4-4M9 7h6M9 10h4"/></svg>
+    <h1>CaltaxCO</h1>
+    <p>Calculadora tributaria Colombia 2026.<br/>IVA, retención en la fuente e impuesto al consumo con tarifas tomadas directamente de la DIAN.</p>
+    <div class="features">
+      <div class="feature">
+        <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
+        IVA y retención
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/><path d="M17 14l2 2 4-4"/></svg>
+        Modo freelancer
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Glosario DIAN
+      </div>
+    </div>
+    <button class="btn-primary" onclick="iniciar()">Empezar a calcular</button>
+  </div>
+
+  <div id="app" style="display:none;">
+
+    <div id="recordatorio-banner" style="display:none;"></div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-calc" onclick="setTab('calc')">Calculadora</button>
+      <button class="tab" id="tab-free" onclick="setTab('free')">Freelancer</button>
+      <button class="tab" id="tab-dash" onclick="setTab('dash')">Dashboard</button>
+      <button class="tab" id="tab-hist" onclick="setTab('hist')">Historial</button>
+      <button class="tab" id="tab-cal" onclick="setTab('cal')">Calendario</button>
+      <button class="tab" id="tab-wiki" onclick="setTab('wiki')">Glosario</button>
+    </div>
+
+    <!-- CALCULADORA -->
+    <div id="panel-calc">
+      <div class="dian-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Tarifas tomadas directamente de la DIAN — <a href="https://www.dian.gov.co" target="_blank" rel="noopener" style="color:var(--blue); margin-left:4px;">dian.gov.co</a>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <p class="card-label" style="margin-bottom:0;">Tipo de negocio</p>
+          <button onclick="setTab('wiki')" style="font-size:11px; padding:3px 10px; border-radius:20px;">¿Cuál me aplica?</button>
+        </div>
+        <div id="negocio-list"></div>
+      </div>
+
+      <div class="card">
+        <p class="card-label">Valor base (sin impuestos)</p>
+        <div class="input-row">
+          <span class="prefix">$</span>
+          <input type="text" id="valorInput" placeholder="Ej: 1.000.000" oninput="onValorInput(this)" />
+          <span class="suffix">COP</span>
+        </div>
+        <p class="legible" id="valor-legible"></p>
+      </div>
+
+      <div class="card">
+        <p class="card-label">Tipo de operación <span style="font-weight:400;text-transform:none;letter-spacing:0;">(define retención)</span></p>
+        <label class="option-row"><input type="radio" name="tipo" value="sd" onchange="calcular()" checked /> Servicio — declarante de renta <span class="badge">4%</span></label>
+        <label class="option-row"><input type="radio" name="tipo" value="sn" onchange="calcular()" /> Servicio — no declarante de renta <span class="badge">6%</span></label>
+        <label class="option-row"><input type="radio" name="tipo" value="cm" onchange="calcular()" /> Compra de bien mueble <span class="badge">2.5%</span></label>
+        <label class="option-row"><input type="radio" name="tipo" value="ho" onchange="calcular()" /> Honorarios profesionales <span class="badge">10%</span></label>
+      </div>
+
+      <div class="card">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;margin-bottom:8px;">
+          <input type="checkbox" id="tieneRet" onchange="toggleRet()" /> Tengo retenciones acumuladas para cruzar
+        </label>
+        <div id="retDiv" style="display:none;margin-top:10px;">
+          <div class="input-row">
+            <span class="prefix">$</span>
+            <input type="text" id="retInput" placeholder="Ej: 80.000" oninput="onRetInput(this)" />
+            <span class="suffix">COP</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultado" style="display:none;">
+        <div class="card">
+          <p class="card-label">Desglose</p>
+          <div id="r-filas"></div>
+        </div>
+        <div class="metricas">
+          <div class="metrica"><p>Lo que recibes</p><span style="color:var(--green);" id="r-recibes"></span></div>
+          <div class="metrica"><p>Deuda tributaria neta</p><span id="r-deuda"></span></div>
+        </div>
+        <div class="alerta" id="alerta"></div>
+        <div class="btn-row">
+          <button onclick="compartirWA(false)">
+            <svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            Compartir
+          </button>
+          <button onclick="copiar()">
+            <svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span id="btn-cp">Copiar</span>
+          </button>
+        </div>
+        <div class="nota">
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:1px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span id="nota-uvt">Tarifas tomadas directamente de la DIAN · Resolución 000238 de 2025 · UVT 2026: $52.374 · <a href="https://www.dian.gov.co" target="_blank" rel="noopener">dian.gov.co</a></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="placeholder" id="placeholder">
+        <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
+        <p>Selecciona tu tipo de negocio e ingresa un valor</p>
+      </div>
+    </div>
+
+    <!-- FREELANCER -->
+    <div id="panel-free" style="display:none;">
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.5;">
+        Ingresa lo que quieres recibir neto y calcula exactamente cuánto cobrarle al cliente.
+      </div>
+      <div class="card">
+        <p class="card-label">¿Cuánto quieres recibir neto?</p>
+        <div class="input-row">
+          <span class="prefix">$</span>
+          <input type="text" id="netoInput" placeholder="Ej: 2.000.000" oninput="onNetoInput(this)" />
+          <span class="suffix">COP</span>
+        </div>
+      </div>
+      <div class="card">
+        <p class="card-label">Tipo de retención</p>
+        <label class="option-row"><input type="radio" name="tipoF" value="0.04" onchange="calcFree()" checked /> Servicio declarante <span class="badge">4%</span></label>
+        <label class="option-row"><input type="radio" name="tipoF" value="0.06" onchange="calcFree()" /> Servicio no declarante <span class="badge">6%</span></label>
+        <label class="option-row"><input type="radio" name="tipoF" value="0.10" onchange="calcFree()" /> Honorarios profesionales <span class="badge">10%</span></label>
+      </div>
+      <div class="card">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
+          <input type="checkbox" id="ivaFree" onchange="calcFree()" checked /> Incluir IVA (19%) en la factura
+        </label>
+      </div>
+      <div id="free-res" style="display:none;">
+        <div class="metricas">
+          <div class="metrica"><p>Debes cobrar</p><span id="f-cobrar"></span></div>
+          <div class="metrica"><p>Recibirás neto</p><span style="color:var(--green);" id="f-neto"></span></div>
+        </div>
+        <div class="card"><div id="f-desglose"></div></div>
+        <button onclick="compartirWA(true)" style="width:100%;padding:10px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:1rem;">
+          <svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          Compartir por WhatsApp
+        </button>
+        <div class="nota">Tarifas tomadas directamente de la DIAN · <a href="https://www.dian.gov.co" target="_blank" rel="noopener">dian.gov.co</a></div>
+      </div>
+      <div class="placeholder" id="free-ph">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+        <p>Ingresa el valor que quieres recibir</p>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="panel-dash" style="display:none;">
+      <div class="placeholder" id="dash-empty">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        <p>Aún no hay cálculos para mostrar el dashboard</p>
+      </div>
+      <div id="dash-content" style="display:none;">
+        <div class="dash-grid">
+          <div class="dash-card">
+            <p class="card-label" style="margin-bottom:6px;">Facturado</p>
+            <span class="dash-valor" id="dash-facturado"></span>
+          </div>
+          <div class="dash-card">
+            <p class="card-label" style="margin-bottom:6px;">IVA / Impuesto</p>
+            <span class="dash-valor" id="dash-iva"></span>
+          </div>
+          <div class="dash-card">
+            <p class="card-label" style="margin-bottom:6px;">Retenciones</p>
+            <span class="dash-valor" id="dash-retenciones"></span>
+          </div>
+          <div class="dash-card">
+            <p class="card-label" style="margin-bottom:6px;">Neto recibido</p>
+            <span class="dash-valor" id="dash-neto" style="color:var(--green);"></span>
+          </div>
+        </div>
+
+        <div class="card" style="background:var(--blue-bg);border-color:var(--blue);">
+          <p class="card-label" style="color:var(--blue);">Reserva sugerida para impuestos</p>
+          <span class="dash-valor" id="dash-reserva" style="color:var(--blue);"></span>
+          <p style="font-size:12px;color:var(--blue);margin-top:8px;line-height:1.5;" id="dash-reserva-detalle"></p>
+        </div>
+
+        <div class="card">
+          <p class="card-label">Estadísticas rápidas</p>
+          <div class="modal-row"><span class="concepto">Número total de cálculos</span><span id="dash-total"></span></div>
+          <div class="modal-row"><span class="concepto">Promedio por operación</span><span id="dash-promedio"></span></div>
+          <div class="modal-row"><span class="concepto">Mayor operación registrada</span><span id="dash-mayor"></span></div>
+          <div class="modal-row"><span class="concepto">Última operación</span><span id="dash-ultima"></span></div>
+        </div>
+
+        <div class="card">
+          <p class="card-label">Facturación por mes</p>
+          <div id="dash-grafica"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <p class="card-label" style="margin-bottom:0;" id="dash-reporte-titulo">Reporte mensual</p>
+          </div>
+          <div id="dash-reporte"></div>
+        </div>
+
+        <div class="card">
+          <p class="card-label">Actividad reciente</p>
+          <div id="dash-actividad"></div>
+        </div>
+
+        <button id="btn-exportar-excel" onclick="exportarExcel()" style="width:100%;padding:12px;font-size:14px;font-weight:500;background:var(--text);color:var(--surface);margin-bottom:1rem;">
+          Exportar a Excel
+        </button>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="panel-hist" style="display:none;">
+      <div class="card" style="margin-bottom:10px;">
+        <div class="input-row" style="margin-bottom:10px;">
+          <input type="text" id="hist-buscar" placeholder="Buscar por monto o tipo de negocio..." oninput="renderHist()" style="border:none;background:transparent;padding:10px 12px;" />
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="hist-filtro active" data-f="todo" onclick="setHistFiltro('todo')" style="flex:1;font-size:12px;padding:8px 4px;">Todo</button>
+          <button class="hist-filtro" data-f="hoy" onclick="setHistFiltro('hoy')" style="flex:1;font-size:12px;padding:8px 4px;">Hoy</button>
+          <button class="hist-filtro" data-f="semana" onclick="setHistFiltro('semana')" style="flex:1;font-size:12px;padding:8px 4px;">Esta semana</button>
+          <button class="hist-filtro" data-f="mes" onclick="setHistFiltro('mes')" style="flex:1;font-size:12px;padding:8px 4px;">Este mes</button>
+        </div>
+      </div>
+      <div id="hist-lista"></div>
+      <div class="placeholder" id="hist-empty">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <p>Aún no hay cálculos guardados</p>
+      </div>
+      <button id="btn-limpiar" onclick="limpiarHist()" style="display:none;width:100%;margin-top:1rem;padding:10px;font-size:14px;color:var(--red);">Limpiar historial</button>
+    </div>
+
+    <!-- MODAL DETALLE HISTORIAL -->
+    <div id="hist-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this) cerrarHistModal()">
+      <div class="card" style="max-width:380px;width:100%;margin-bottom:0;max-height:85vh;overflow-y:auto;">
+        <div id="hist-modal-body"></div>
+      </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN -->
+    <div id="confirm-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center;padding:1rem;">
+      <div class="card" style="max-width:340px;width:100%;margin-bottom:0;">
+        <p id="confirm-modal-texto" style="font-size:14px;margin-bottom:16px;line-height:1.5;"></p>
+        <div style="display:flex;gap:8px;">
+          <button id="confirm-modal-cancelar" style="flex:1;padding:10px;font-size:14px;">Cancelar</button>
+          <button id="confirm-modal-aceptar" style="flex:1;padding:10px;font-size:14px;color:var(--red);border-color:var(--red);">Eliminar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALENDARIO -->
+    <div id="panel-cal" style="display:none;">
+
+      <div class="card">
+        <p class="card-label">Próximos 7 días</p>
+        <div id="cal-proximos"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <button onclick="cambiarMesCal(-1)" style="padding:6px 12px;">&larr;</button>
+          <p class="card-label" id="cal-mes-titulo" style="margin-bottom:0;"></p>
+          <button onclick="cambiarMesCal(1)" style="padding:6px 12px;">&rarr;</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <p class="card-label" style="margin-bottom:0;">Mis recordatorios</p>
+          <button onclick="abrirFormEvento()" style="font-size:12px;padding:6px 12px;">+ Agregar</button>
+        </div>
+        <div id="cal-eventos-custom"></div>
+        <div class="placeholder" id="cal-eventos-empty" style="padding:1.5rem 0;">
+          <p style="font-size:13px;">No tienes recordatorios personalizados</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="card-label">Configuración de recordatorios</p>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:10px;">Avisarme con anticipación de:</p>
+        <div id="cal-config-recordatorio"></div>
+      </div>
+
+      <div class="nota">
+        <div style="display:flex;align-items:flex-start;gap:8px;">
+          <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:1px;" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Las fechas de vencimiento de IVA, retención e ICA dependen del último dígito del NIT y del calendario tributario anual de la DIAN. Las fechas mostradas son orientativas — confirma siempre el calendario oficial vigente.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL EVENTO PERSONALIZADO -->
+    <div id="evento-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center;padding:1rem;" onclick="if(event.target===this) cerrarFormEvento()">
+      <div class="card" style="max-width:380px;width:100%;margin-bottom:0;">
+        <p class="card-label">Nuevo recordatorio</p>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">Título</label>
+          <input type="text" id="evento-titulo" placeholder="Ej: Pagar contador" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">Fecha</label>
+          <input type="date" id="evento-fecha" style="width:100%;" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px;">Notas (opcional)</label>
+          <input type="text" id="evento-notas" placeholder="Ej: Enviar factura cliente X" />
+        </div>
+        <div class="btn-row" style="margin-top:14px;">
+          <button onclick="guardarEvento()" style="background:var(--text);color:var(--surface);">Guardar</button>
+          <button onclick="cerrarFormEvento()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GLOSARIO -->
+
+    <div id="panel-wiki" style="display:none;">
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.5;">
+        Glosario tributario colombiano — tarifas e información tomadas directamente de la DIAN y el Estatuto Tributario.
+      </div>
+      <div id="wiki-lista"></div>
+      <div class="nota" style="margin-top:1rem;">
+        Información tomada directamente de la DIAN y el Estatuto Tributario colombiano. Fuente oficial: <a href="https://www.dian.gov.co" target="_blank" rel="noopener">dian.gov.co</a>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    CaltaxCO es una herramienta informativa de apoyo y no constituye asesoría tributaria, contable o legal.<br/>
+    Las tarifas se basan en normativa vigente a la fecha indicada y pueden cambiar — verifica siempre con un contador certificado antes de tomar decisiones.<br/>
+    <span id="footer-uvt">Tarifas tomadas directamente de la DIAN · UVT 2026: $52.374</span><br/>
+    <a href="privacy.html">Política de privacidad</a>
+  </footer>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ============================================
+// CONFIGURACIÓN TRIBUTARIA — actualizar cada año
+// ============================================
+const CONFIG = {
+  anio: 2026,
+  uvt: 52374,
+  resolucion: 'Resolución 000238 de 2025',
+  maxValor: 999999999999, // ~1 billón COP, límite para evitar valores absurdos
+  tarifasRetencion: {
+    sd: { pct:0.04, label:'Retención (4%)', min:4 },
+    sn: { pct:0.06, label:'Retención (6%)', min:4 },
+    cm: { pct:0.025, label:'Retención (2.5%)', min:10 },
+    ho: { pct:0.10, label:'Retención (10%)', min:0 }
+  },
+  tarifasFreelancer: {0.04:'Retención (4%)',0.06:'Retención (6%)',0.10:'Retención (10%)'},
+  ivaGeneral: 0.19,
+  // Obligaciones tributarias recurrentes (días orientativos — verificar calendario DIAN según NIT/municipio)
+  obligaciones: [
+    {tipo:'IVA', titulo:'Declaración y pago de IVA', dia:24, mesesPar:true, color:'IVA'},
+    {tipo:'RETENCION', titulo:'Declaración y pago de retención en la fuente', dia:14, mesesPar:false, color:'RETENCION'},
+    {tipo:'ICA', titulo:'Declaración y pago de ICA', dia:18, mesesPar:true, mesesEspecificos:[4,10], color:'ICA'},
+    {tipo:'RENTA', titulo:'Declaración de renta (personas naturales)', dia:31, mesAnual:8, color:'RENTA'}
+  ]
+};
+const UVT = CONFIG.uvt; // alias retrocompatible
+let vBase=0, vRet=0, vNeto=0, historial=[], ultimoRes=null, ultimoFree=null;
+let eventosCustom=[];
+let recordatoriosConfig={dias1:true, dias3:true, dias7:false};
+let calMesActual=new Date().getMonth(), calAnioActual=new Date().getFullYear();
+
+const NEGOCIOS = [
+  {id:'general',   label:'Servicios y tecnología',      desc:'Software, consultoría, marketing, diseño',          iva:19, tipo:'IVA'},
+  {id:'restaurante',label:'Restaurantes y bares',       desc:'Comidas, bebidas, establecimientos de consumo',      iva:8,  tipo:'Imp. consumo'},
+  {id:'reducido',  label:'Productos básicos',           desc:'Café, motos pequeñas, bicicletas, insumos agro',     iva:5,  tipo:'IVA reducido'},
+  {id:'exento',    label:'Exentos de impuesto',         desc:'Libros, exportaciones, servicios educativos',        iva:0,  tipo:'Exento'},
+  {id:'licores',   label:'Licores y bebidas alcohólicas',desc:'Vinos, aperitivos, bebidas fermentadas',            iva:19, tipo:'IVA + Imp. selectivo'},
+  {id:'lujo',      label:'Bienes de lujo',              desc:'Yates, aeronaves, motos +200cc',                     iva:19, tipo:'IVA + Imp. suntuario'},
+];
+
+const WIKI = [
+  {term:'IVA (Impuesto al Valor Agregado)', desc:'Impuesto indirecto que grava el consumo de bienes y servicios. En Colombia tiene tres tarifas: 19% (general), 5% (reducido) y 0% (exento). Lo paga el consumidor final pero lo recauda el vendedor para entregárselo a la DIAN.', tarifas:'19% general · 5% reducido · 0% exento', fuente:'Art. 420-513 Estatuto Tributario'},
+  {term:'Retención en la fuente', desc:'Mecanismo por el cual quien paga un servicio descuenta un porcentaje antes de hacer el pago y lo entrega directamente a la DIAN. Es un anticipo del impuesto de renta. El valor retenido se cruza con la deuda tributaria al momento de declarar.', tarifas:'Servicios declarante: 4% · No declarante: 6% · Honorarios: 10% · Compras: 2.5%', fuente:'Art. 365-419 Estatuto Tributario'},
+  {term:'Impuesto al consumo', desc:'Impuesto nacional que aplica principalmente a restaurantes, bares y servicios de alimentación. A diferencia del IVA, no genera derecho a descuento y lo paga directamente el consumidor final al establecimiento.', tarifas:'Restaurantes y bares: 8%', fuente:'Art. 512-1 Estatuto Tributario'},
+  {term:'UVT (Unidad de Valor Tributario)', desc:'Valor de referencia que usa la DIAN para calcular umbrales, bases mínimas y sanciones. Se actualiza cada año. Todos los límites de retención en la fuente se expresan en UVT y se multiplican por este valor para obtener la cifra en pesos.', tarifas:`${CONFIG.anio}: ${fmt(CONFIG.uvt)} — ${CONFIG.resolucion}`, fuente:'Art. 868 Estatuto Tributario'},
+  {term:'Declarante de renta', desc:'Persona natural o jurídica obligada a presentar declaración de renta ante la DIAN. Los declarantes tienen retención del 4% en servicios. Los no declarantes tienen retención del 6%. La condición depende de ingresos, patrimonio y otras variables.', tarifas:'Retención declarantes: 4% · No declarantes: 6%', fuente:'Art. 592-594 Estatuto Tributario'},
+  {term:'ICA (Impuesto de Industria y Comercio)', desc:'Impuesto municipal que grava las actividades industriales, comerciales y de servicios. La tarifa varía según el municipio y el tipo de actividad económica. En Bogotá oscila entre 0.2% y 1.4% sobre los ingresos brutos.', tarifas:'Varía por municipio y actividad (0.2% a 1.4%)', fuente:'Ley 14 de 1983 · Decretos municipales'},
+  {term:'Cruce de retenciones', desc:'Mecanismo que permite usar las retenciones en la fuente acumuladas como abono contra tu deuda tributaria. Si acumulaste $500.000 en retenciones y debes $1.200.000 de renta, solo pagas $700.000. Si las retenciones superan la deuda, tienes un saldo a favor.', tarifas:'Descuento directo sobre impuesto a pagar', fuente:'Art. 373-374 Estatuto Tributario'},
+];
+
+function fmt(n){ return '$'+Math.round(n).toLocaleString('es-CO'); }
+function parsear(s){ return parseFloat(s.replace(/\./g,'').replace(',','.')) || 0; }
+function formatear(s){
+  const n=s.replace(/[^0-9]/g,'');
+  if(!n) return '';
+  let num=parseInt(n,10);
+  if(num>CONFIG.maxValor) num=CONFIG.maxValor; // evita números absurdos
+  return num.toLocaleString('es-CO');
+}
+
+function actualizarTextosUVT(){
+  const txt=`Tarifas tomadas directamente de la DIAN · Resolución ${CONFIG.resolucion.replace('Resolución ','')} · UVT ${CONFIG.anio}: ${fmt(CONFIG.uvt)} · <a href="https://www.dian.gov.co" target="_blank" rel="noopener">dian.gov.co</a>`;
+  const notaUvt=document.getElementById('nota-uvt');
+  if(notaUvt) notaUvt.innerHTML=txt;
+  const footerUvt=document.getElementById('footer-uvt');
+  if(footerUvt) footerUvt.textContent=`Tarifas tomadas directamente de la DIAN · UVT ${CONFIG.anio}: ${fmt(CONFIG.uvt)}`;
+}
+
+function iniciar(){
+  document.getElementById('bienvenida').style.display='none';
+  document.getElementById('app').style.display='block';
+  renderNegocios();
+  renderWiki();
+  actualizarTextosUVT();
+  cargarEstado();
+  revisarRecordatorios();
+  localStorage.setItem('caltax_visitado','1');
+}
+
+function revisarRecordatorios(){
+  const banner=document.getElementById('recordatorio-banner');
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+
+  const diasActivos=Object.entries({dias1:1,dias3:3,dias7:7})
+    .filter(([key])=>recordatoriosConfig[key])
+    .map(([,n])=>n);
+
+  if(!diasActivos.length){ banner.style.display='none'; return; }
+
+  const maxDias=Math.max(...diasActivos);
+  const limite=new Date(hoy); limite.setDate(hoy.getDate()+maxDias);
+
+  const eventos=eventosEnRango(hoy.getFullYear(), hoy.getMonth(), 2)
+    .filter(e=>e.fecha>=hoy && e.fecha<=limite)
+    .filter(e=>{
+      const dias=Math.round((e.fecha-hoy)/86400000);
+      return diasActivos.includes(dias) || (dias<=Math.min(...diasActivos) && diasActivos.includes(Math.min(...diasActivos)));
+    })
+    .sort((a,b)=>a.fecha-b.fecha);
+
+  if(!eventos.length){ banner.style.display='none'; return; }
+
+  const e=eventos[0];
+  const dias=Math.round((e.fecha-hoy)/86400000);
+  const cuando = dias===0 ? 'hoy' : dias===1 ? 'mañana' : `en ${dias} días`;
+  const tag=CAL_TAGS[e.tipo];
+
+  banner.innerHTML=`
+    <div class="rb-row">
+      <div>
+        <strong>${e.titulo}</strong> vence ${cuando} (${fmtFechaCorta(e.fecha)}).
+        ${eventos.length>1?`<div style="margin-top:4px;font-size:12px;">+${eventos.length-1} vencimiento(s) más esta semana.</div>`:''}
+      </div>
+      <button onclick="document.getElementById('recordatorio-banner').style.display='none'" aria-label="Cerrar">&times;</button>
+    </div>
+  `;
+  banner.style.display='block';
+}
+
+function renderNegocios(){
+  document.getElementById('negocio-list').innerHTML = NEGOCIOS.map((n,i)=>`
+    <label class="option-row" style="align-items:flex-start;">
+      <input type="radio" name="negocio" value="${n.id}" onchange="calcular()" ${i===0?'checked':''} style="margin-top:2px;" />
+      <span style="flex:1;">
+        ${n.label}
+        <span class="negocio-desc">${n.desc}</span>
+      </span>
+      <span class="badge">${n.iva>0?n.iva+'%':''} ${n.tipo}</span>
+    </label>
+  `).join('');
+}
+
+function renderWiki(){
+  document.getElementById('wiki-lista').innerHTML = WIKI.map(w=>`
+    <div class="wiki-card">
+      <h3>${w.term}</h3>
+      <p>${w.desc}</p>
+      <div class="wiki-tag"><strong>Tarifas:</strong> ${w.tarifas}</div>
+      <div class="wiki-fuente">Fuente: ${w.fuente} · <a href="https://www.dian.gov.co" target="_blank" rel="noopener">dian.gov.co</a></div>
+    </div>
+  `).join('');
+}
+
+function setTab(t){
+  ['calc','free','dash','hist','cal','wiki'].forEach(x=>{
+    document.getElementById('panel-'+x).style.display = x===t?'block':'none';
+    document.getElementById('tab-'+x).className = 'tab'+(x===t?' active':'');
+  });
+  if(t==='hist') renderHist();
+  if(t==='dash') renderDashboard();
+  if(t==='cal') renderCalendario();
+  guardarEstado();
+}
+
+function onValorInput(el){
+  const p=el.selectionStart, a=el.value.length;
+  const nCrudo=parseInt(el.value.replace(/[^0-9]/g,''),10)||0;
+  el.value=formatear(el.value);
+  const d=el.value.length;
+  el.setSelectionRange(p+(d-a),p+(d-a));
+  vBase=parsear(el.value);
+  const leg=document.getElementById('valor-legible');
+  if(nCrudo>CONFIG.maxValor){
+    leg.textContent=`Valor máximo permitido: ${fmt(CONFIG.maxValor)} COP`;
+    leg.style.color='var(--red)';
+  }else{
+    leg.style.color='';
+    leg.textContent=vBase>0?'Valor: '+fmt(vBase)+' COP':'';
+  }
+  calcular();
+}
+function onRetInput(el){ el.value=formatear(el.value); vRet=parsear(el.value); calcular(); }
+function onNetoInput(el){
+  const p=el.selectionStart, a=el.value.length;
+  el.value=formatear(el.value);
+  const d=el.value.length;
+  el.setSelectionRange(p+(d-a),p+(d-a));
+  vNeto=parsear(el.value);
+  calcFree();
+}
+function toggleRet(){ document.getElementById('retDiv').style.display=document.getElementById('tieneRet').checked?'block':'none'; calcular(); guardarEstado(); }
+
+function getNegocio(){ return NEGOCIOS.find(n=>n.id===(document.querySelector('input[name="negocio"]:checked')||{value:'general'}).value)||NEGOCIOS[0]; }
+function getTarifa(){ return CONFIG.tarifasRetencion[document.querySelector('input[name="tipo"]:checked').value]; }
+
+function mkFila(label, valor, color){
+  return `<div class="fila"><span class="concepto">${label}</span><span class="valor"${color?' style="color:'+color+';"':''}>${valor}</span></div>`;
+}
+
+function calcular(){
+  if(vBase<=0){ document.getElementById('resultado').style.display='none'; document.getElementById('placeholder').style.display='block'; return; }
+  const neg=getNegocio();
+  const t=getTarifa();
+  const minP=t.min*UVT;
+  const impuesto=vBase*(neg.iva/100);
+  const total=vBase+impuesto;
+  const aplicaRte=vBase>=minP;
+  const rte=aplicaRte?vBase*t.pct:0;
+  const recibe=total-rte;
+  const acum=document.getElementById('tieneRet').checked?vRet:0;
+  const deuda=Math.max(0,rte-acum);
+
+  let filas=mkFila('Valor base',fmt(vBase));
+  if(neg.iva>0) filas+=mkFila(`${neg.tipo} (${neg.iva}%)`,fmt(impuesto));
+  filas+=mkFila(t.label,aplicaRte?'-'+fmt(rte):'$0 (bajo umbral mínimo)','var(--red)');
+  filas+=mkFila('Total factura',fmt(total));
+  if(acum>0) filas+=mkFila('Retenciones acumuladas','-'+fmt(acum),'var(--green)');
+  document.getElementById('r-filas').innerHTML=filas;
+
+  document.getElementById('r-recibes').textContent=fmt(recibe);
+  const de=document.getElementById('r-deuda');
+  de.textContent=fmt(deuda);
+  de.style.color=deuda>0?'var(--red)':'var(--green)';
+
+  const al=document.getElementById('alerta');
+  if(!aplicaRte&&t.min>0){ al.style.display='block'; al.textContent=`El valor (${fmt(vBase)}) no supera el umbral mínimo de ${t.min} UVT (${fmt(minP)}). No aplica retención en la fuente.`; }
+  else al.style.display='none';
+
+  document.getElementById('resultado').style.display='block';
+  document.getElementById('placeholder').style.display='none';
+
+  ultimoRes={base:vBase,impuesto,rte,total,recibe,deuda,negLabel:neg.label,ivaLabel:`${neg.tipo} (${neg.iva}%)`,rteLabel:t.label,fecha:new Date().toLocaleString('es-CO')};
+
+  // Guardar en historial solo cuando el usuario deja de escribir (evita una entrada por cada tecla)
+  if(!window._cargandoEstado){
+    clearTimeout(window._histTimer);
+    window._histTimer=setTimeout(()=>{
+      const entrada={
+        id: 'h'+Date.now()+Math.random().toString(36).slice(2,7),
+        fechaISO: new Date().toISOString(),
+        fecha: new Date().toLocaleString('es-CO'),
+        base:vBase, impuesto, rte, total, recibe, deuda,
+        negocioId: neg.id, negLabel: neg.label, ivaLabel:`${neg.tipo} (${neg.iva}%)`,
+        tipoOperacionId: document.querySelector('input[name="tipo"]:checked').value,
+        rteLabel: t.label,
+        retAcumInput: document.getElementById('tieneRet').checked ? document.getElementById('retInput').value : ''
+      };
+      historial.unshift(entrada);
+      if(historial.length>200) historial.pop();
+      guardarEstado();
+      if(document.querySelector('.tab.active')?.id==='tab-hist') renderHist();
+      if(document.querySelector('.tab.active')?.id==='tab-dash') renderDashboard();
+    }, 800);
+  }
+
+  guardarEstado();
+}
+
+function calcFree(){
+  if(vNeto<=0){ document.getElementById('free-res').style.display='none'; document.getElementById('free-ph').style.display='block'; return; }
+  const pct=parseFloat(document.querySelector('input[name="tipoF"]:checked').value);
+  const labels=CONFIG.tarifasFreelancer;
+  const conIVA=document.getElementById('ivaFree').checked;
+  const base=vNeto/(1-pct);
+  const iva=conIVA?base*CONFIG.ivaGeneral:0;
+  const cobrar=base+iva;
+  const rte=base*pct;
+  const neto=cobrar-rte;
+
+  document.getElementById('f-cobrar').textContent=fmt(cobrar);
+  document.getElementById('f-neto').textContent=fmt(neto);
+
+  let d=mkFila('Valor base factura',fmt(base));
+  if(conIVA) d+=mkFila(`IVA (${Math.round(CONFIG.ivaGeneral*100)}%)`,fmt(iva));
+  d+=mkFila(labels[pct],'-'+fmt(rte),'var(--red)');
+  document.getElementById('f-desglose').innerHTML=d;
+
+  document.getElementById('free-res').style.display='block';
+  document.getElementById('free-ph').style.display='none';
+  ultimoFree={cobrar,neto,base,iva,rte,label:labels[pct]};
+}
+
+function textoRes(){
+  if(!ultimoRes) return '';
+  return `*Cálculo tributario — CaltaxCO 2026*\n\n`+
+    `Negocio: ${ultimoRes.negLabel}\n`+
+    `Valor base: ${fmt(ultimoRes.base)}\n`+
+    `${ultimoRes.ivaLabel}: ${fmt(ultimoRes.impuesto)}\n`+
+    `${ultimoRes.rteLabel}: -${fmt(ultimoRes.rte)}\n`+
+    `Total factura: ${fmt(ultimoRes.total)}\n`+
+    `Lo que recibo: ${fmt(ultimoRes.recibe)}\n`+
+    `Deuda tributaria: ${fmt(ultimoRes.deuda)}\n\n`+
+    `_Tarifas tomadas directamente de la DIAN — dian.gov.co_\n`+
+    `Calculado con CaltaxCO · juan-g123.github.io/Caltax-Colombia`;
+}
+
+function textoFree(){
+  if(!ultimoFree) return '';
+  return `*Modo freelancer — CaltaxCO 2026*\n\n`+
+    `Quiero recibir neto: ${fmt(vNeto)}\n`+
+    `Debo cobrar: ${fmt(ultimoFree.cobrar)}\n`+
+    `${ultimoFree.label}: -${fmt(ultimoFree.rte)}\n`+
+    `Recibiré neto: ${fmt(ultimoFree.neto)}\n\n`+
+    `_Tarifas tomadas directamente de la DIAN — dian.gov.co_\n`+
+    `Calculado con CaltaxCO · juan-g123.github.io/Caltax-Colombia`;
+}
+
+function compartirWA(esFree){
+  const txt=esFree?textoFree():textoRes();
+  if(!txt) return;
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+}
+
+function copiar(){
+  if(!ultimoRes) return;
+  navigator.clipboard.writeText(textoRes()).then(()=>{
+    const b=document.getElementById('btn-cp');
+    b.textContent='¡Copiado!';
+    setTimeout(()=>b.textContent='Copiar',2000);
+  });
+}
+
+let histFiltro='todo';
+
+function setHistFiltro(f){
+  histFiltro=f;
+  document.querySelectorAll('.hist-filtro').forEach(b=>b.classList.toggle('active', b.dataset.f===f));
+  renderHist();
+}
+
+function filtrarHistorial(){
+  const ahora=new Date();
+  const inicioHoy=new Date(ahora.getFullYear(),ahora.getMonth(),ahora.getDate());
+  const inicioSemana=new Date(inicioHoy); inicioSemana.setDate(inicioHoy.getDate()-inicioHoy.getDay());
+  const inicioMes=new Date(ahora.getFullYear(),ahora.getMonth(),1);
+  const busqueda=(document.getElementById('hist-buscar')?.value||'').trim().toLowerCase();
+
+  return historial.filter(r=>{
+    if(histFiltro!=='todo'){
+      const f=new Date(r.fechaISO||r.fecha);
+      if(histFiltro==='hoy' && f<inicioHoy) return false;
+      if(histFiltro==='semana' && f<inicioSemana) return false;
+      if(histFiltro==='mes' && f<inicioMes) return false;
+    }
+    if(busqueda){
+      const montoStr=String(Math.round(r.base));
+      const montoFmt=fmt(r.base).toLowerCase();
+      const neg=(r.negLabel||'').toLowerCase();
+      if(!montoStr.includes(busqueda.replace(/[^0-9]/g,'')) && !montoFmt.includes(busqueda) && !neg.includes(busqueda)){
+        return false;
+      }
+    }
+    return true;
+  });
+}
+
+function renderHist(){
+  const lista=document.getElementById('hist-lista');
+  const empty=document.getElementById('hist-empty');
+  const btn=document.getElementById('btn-limpiar');
+
+  if(!historial.length){ lista.innerHTML=''; empty.style.display='block'; empty.querySelector('p').textContent='Aún no hay cálculos guardados'; btn.style.display='none'; return; }
+  btn.style.display='block';
+
+  const filtrados=filtrarHistorial();
+  if(!filtrados.length){
+    lista.innerHTML='';
+    empty.style.display='block';
+    empty.querySelector('p').textContent='No hay resultados para este filtro o búsqueda';
+    return;
+  }
+  empty.style.display='none';
+
+  lista.innerHTML=filtrados.map(r=>`
+    <div class="hist-card">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:500;">${fmt(r.base)}</span>
+        <span style="font-size:11px;color:var(--text3);">${r.fecha}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">${r.negLabel} · ${r.rteLabel}</div>
+      <div style="display:flex;gap:16px;font-size:13px;">
+        <span>Recibe: <strong style="color:var(--green);">${fmt(r.recibe)}</strong></span>
+        <span>Deuda: <strong>${fmt(r.deuda)}</strong></span>
+      </div>
+      <div class="hist-acciones">
+        <button onclick="verDetalleHist('${r.id}')">Ver detalles</button>
+        <button onclick="recalcularHist('${r.id}')">Recalcular</button>
+        <button onclick="eliminarHistEntry('${r.id}')" style="color:var(--red);">Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function verDetalleHist(id){
+  const r=historial.find(x=>x.id===id);
+  if(!r) return;
+  const body=document.getElementById('hist-modal-body');
+  body.innerHTML=`
+    <p class="card-label">Detalle del cálculo</p>
+    <div class="modal-row"><span class="concepto">Fecha</span><span>${r.fecha}</span></div>
+    <div class="modal-row"><span class="concepto">Tipo de negocio</span><span>${r.negLabel}</span></div>
+    <div class="modal-row"><span class="concepto">Valor base</span><span>${fmt(r.base)}</span></div>
+    <div class="modal-row"><span class="concepto">${r.ivaLabel}</span><span>${fmt(r.impuesto)}</span></div>
+    <div class="modal-row"><span class="concepto">Total factura</span><span>${fmt(r.total)}</span></div>
+    <div class="modal-row"><span class="concepto">${r.rteLabel}</span><span>-${fmt(r.rte)}</span></div>
+    <div class="modal-row"><span class="concepto">Lo que recibes</span><span style="color:var(--green);font-weight:500;">${fmt(r.recibe)}</span></div>
+    <div class="modal-row"><span class="concepto">Deuda tributaria neta</span><span style="font-weight:500;">${fmt(r.deuda)}</span></div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button onclick="cerrarHistModal();recalcularHist('${r.id}')">Recalcular</button>
+      <button onclick="cerrarHistModal()">Cerrar</button>
+    </div>
+  `;
+  document.getElementById('hist-modal-overlay').style.display='flex';
+}
+
+function cerrarHistModal(){
+  document.getElementById('hist-modal-overlay').style.display='none';
+}
+
+function recalcularHist(id){
+  const r=historial.find(x=>x.id===id);
+  if(!r) return;
+
+  const radioNeg=document.querySelector(`input[name="negocio"][value="${r.negocioId}"]`);
+  if(radioNeg) radioNeg.checked=true;
+
+  const radioTipo=document.querySelector(`input[name="tipo"][value="${r.tipoOperacionId}"]`);
+  if(radioTipo) radioTipo.checked=true;
+
+  const valorInput=document.getElementById('valorInput');
+  valorInput.value=Math.round(r.base).toLocaleString('es-CO');
+
+  const tieneRet=document.getElementById('tieneRet');
+  if(r.retAcumInput){
+    tieneRet.checked=true;
+    document.getElementById('retDiv').style.display='block';
+    const retInput=document.getElementById('retInput');
+    retInput.value=r.retAcumInput;
+    vRet=parsear(retInput.value);
+  }else{
+    tieneRet.checked=false;
+    document.getElementById('retDiv').style.display='none';
+    vRet=0;
+  }
+
+  vBase=parsear(valorInput.value);
+  document.getElementById('valor-legible').textContent=vBase>0?'Valor: '+fmt(vBase)+' COP':'';
+
+  setTab('calc');
+  calcular();
+}
+
+function eliminarHistEntry(id){
+  mostrarConfirm('¿Eliminar este cálculo del historial? Esta acción no se puede deshacer.', ()=>{
+    historial=historial.filter(x=>x.id!==id);
+    renderHist();
+    renderDashboard();
+    guardarEstado();
+  });
+}
+
+function mostrarConfirm(texto, onAceptar){
+  const overlay=document.getElementById('confirm-modal-overlay');
+  document.getElementById('confirm-modal-texto').textContent=texto;
+  overlay.style.display='flex';
+
+  const btnAceptar=document.getElementById('confirm-modal-aceptar');
+  const btnCancelar=document.getElementById('confirm-modal-cancelar');
+
+  const limpiar=()=>{
+    overlay.style.display='none';
+    btnAceptar.replaceWith(btnAceptar.cloneNode(true));
+    btnCancelar.replaceWith(btnCancelar.cloneNode(true));
+  };
+
+  document.getElementById('confirm-modal-aceptar').onclick=()=>{ limpiar(); onAceptar(); };
+  document.getElementById('confirm-modal-cancelar').onclick=limpiar;
+}
+
+function limpiarHist(){
+  mostrarConfirm('¿Seguro que deseas borrar todo el historial? Esta acción no se puede deshacer.', ()=>{
+    historial=[];
+    renderHist();
+    renderDashboard();
+    guardarEstado();
+  });
+}
+
+// ============================================
+// DASHBOARD
+// ============================================
+function renderDashboard(){
+  const empty=document.getElementById('dash-empty');
+  const content=document.getElementById('dash-content');
+
+  if(!historial.length){
+    empty.style.display='block';
+    content.style.display='none';
+    return;
+  }
+  empty.style.display='none';
+  content.style.display='block';
+
+  const facturado=historial.reduce((s,r)=>s+r.base,0);
+  const iva=historial.reduce((s,r)=>s+r.impuesto,0);
+  const retenciones=historial.reduce((s,r)=>s+r.rte,0);
+  const neto=historial.reduce((s,r)=>s+r.recibe,0);
+
+  document.getElementById('dash-facturado').textContent=fmt(facturado);
+  document.getElementById('dash-iva').textContent=fmt(iva);
+  document.getElementById('dash-retenciones').textContent=fmt(retenciones);
+  document.getElementById('dash-neto').textContent=fmt(neto);
+
+  document.getElementById('dash-total').textContent=historial.length;
+  document.getElementById('dash-promedio').textContent=fmt(facturado/historial.length);
+
+  const mayor=historial.reduce((max,r)=>r.base>max.base?r:max, historial[0]);
+  document.getElementById('dash-mayor').textContent=`${fmt(mayor.base)} (${mayor.negLabel})`;
+  document.getElementById('dash-ultima').textContent=historial[0].fecha;
+
+  renderGraficaMensual();
+  renderActividadReciente();
+  renderReserva(iva, retenciones);
+  renderReporteMensual();
+}
+
+function renderReserva(ivaAcum, retAcum){
+  // Suma el IVA/impuesto pendiente de pago + retenciones que probablemente se descuenten,
+  // como una sugerencia simple de cuánto reservar para obligaciones tributarias.
+  const reserva = ivaAcum + retAcum;
+  document.getElementById('dash-reserva').textContent=fmt(reserva);
+  document.getElementById('dash-reserva-detalle').textContent=
+    `Basado en ${fmt(ivaAcum)} de IVA/impuesto acumulado y ${fmt(retAcum)} en retenciones de tu historial. Es un estimado informativo, no un valor exacto a declarar.`;
+}
+
+function renderReporteMensual(){
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  // Agrupar historial por mes (YYYY-M)
+  const porMes={};
+  historial.forEach(r=>{
+    const f=new Date(r.fechaISO||r.fecha);
+    const key=`${f.getFullYear()}-${f.getMonth()}`;
+    if(!porMes[key]) porMes[key]={facturado:0, iva:0, retenciones:0, neto:0, operaciones:0, anio:f.getFullYear(), mes:f.getMonth()};
+    porMes[key].facturado+=r.base;
+    porMes[key].iva+=r.impuesto;
+    porMes[key].retenciones+=r.rte;
+    porMes[key].neto+=r.recibe;
+    porMes[key].operaciones+=1;
+  });
+
+  const keys=Object.keys(porMes).sort().reverse(); // más reciente primero
+  const ultimosTres=keys.slice(0,3);
+
+  if(!ultimosTres.length){
+    document.getElementById('dash-reporte').innerHTML=`<p style="font-size:13px;color:var(--text3);">No hay datos suficientes para generar un reporte.</p>`;
+    return;
+  }
+
+  document.getElementById('dash-reporte').innerHTML=ultimosTres.map((key,i)=>{
+    const m=porMes[key];
+    const anterior=porMes[ultimosTres[i+1]];
+    let comp='';
+    if(anterior && anterior.facturado>0){
+      const pct=((m.facturado-anterior.facturado)/anterior.facturado)*100;
+      const signo=pct>=0?'+':'';
+      comp=`<span class="reporte-comp ${pct>=0?'up':'down'}">${signo}${pct.toFixed(1)}% vs ${meses[anterior.mes]}</span>`;
+    }
+    return `
+      <div class="reporte-mes">
+        <div class="reporte-mes-titulo">${meses[m.mes]} ${m.anio}${comp}</div>
+        <div class="modal-row"><span class="concepto">Facturación total</span><span>${fmt(m.facturado)}</span></div>
+        <div class="modal-row"><span class="concepto">IVA / Impuesto total</span><span>${fmt(m.iva)}</span></div>
+        <div class="modal-row"><span class="concepto">Retenciones totales</span><span>${fmt(m.retenciones)}</span></div>
+        <div class="modal-row"><span class="concepto">Neto total</span><span>${fmt(m.neto)}</span></div>
+        <div class="modal-row"><span class="concepto">Cantidad de operaciones</span><span>${m.operaciones}</span></div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// EXPORTAR EXCEL
+// ============================================
+function exportarExcel(){
+  if(typeof XLSX==='undefined'){
+    const btn=document.getElementById('btn-exportar-excel');
+    const original=btn.textContent;
+    btn.textContent='No se pudo cargar el módulo de Excel. Revisa tu conexión.';
+    btn.style.background='var(--red)';
+    setTimeout(()=>{ btn.textContent=original; btn.style.background='var(--text)'; }, 3000);
+    return;
+  }
+
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  // Totales acumulados
+  const facturado=historial.reduce((s,r)=>s+r.base,0);
+  const iva=historial.reduce((s,r)=>s+r.impuesto,0);
+  const retenciones=historial.reduce((s,r)=>s+r.rte,0);
+  const neto=historial.reduce((s,r)=>s+r.recibe,0);
+
+  // Hoja 1: Resumen
+  const resumen=[
+    {Concepto:'Facturación acumulada', Valor:Math.round(facturado)},
+    {Concepto:'IVA / Impuesto acumulado', Valor:Math.round(iva)},
+    {Concepto:'Retenciones acumuladas', Valor:Math.round(retenciones)},
+    {Concepto:'Neto acumulado', Valor:Math.round(neto)},
+    {Concepto:'Número de operaciones', Valor:historial.length},
+    {Concepto:'Reserva sugerida para impuestos', Valor:Math.round(iva+retenciones)},
+    {Concepto:'Fecha de exportación', Valor:new Date().toLocaleString('es-CO')}
+  ];
+
+  // Hoja 2: Historial
+  const histRows=historial.map(r=>({
+    Fecha: r.fecha,
+    'Tipo de negocio': r.negLabel,
+    'Valor base': Math.round(r.base),
+    [r.ivaLabel || 'IVA/Impuesto']: Math.round(r.impuesto),
+    [r.rteLabel || 'Retención']: Math.round(r.rte),
+    'Total factura': Math.round(r.total),
+    'Neto recibido': Math.round(r.recibe)
+  }));
+
+  // Hoja 3: Resumen mensual
+  const porMes={};
+  historial.forEach(r=>{
+    const f=new Date(r.fechaISO||r.fecha);
+    const key=`${f.getFullYear()}-${f.getMonth()}`;
+    if(!porMes[key]) porMes[key]={facturado:0, iva:0, retenciones:0, neto:0, anio:f.getFullYear(), mes:f.getMonth()};
+    porMes[key].facturado+=r.base;
+    porMes[key].iva+=r.impuesto;
+    porMes[key].retenciones+=r.rte;
+    porMes[key].neto+=r.recibe;
+  });
+  const resumenMensual=Object.values(porMes)
+    .sort((a,b)=> a.anio!==b.anio ? a.anio-b.anio : a.mes-b.mes)
+    .map(m=>({
+      Mes: `${meses[m.mes]} ${m.anio}`,
+      Facturación: Math.round(m.facturado),
+      IVA: Math.round(m.iva),
+      Retenciones: Math.round(m.retenciones),
+      Neto: Math.round(m.neto)
+    }));
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'Resumen');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(histRows.length?histRows:[{Fecha:'',Nota:'Sin registros'}]), 'Historial');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumenMensual.length?resumenMensual:[{Mes:'',Nota:'Sin registros'}]), 'Resumen mensual');
+
+  const fechaArchivo=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `CaltaxCO_reporte_${fechaArchivo}.xlsx`);
+}
+
+function renderGraficaMensual(){
+  const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const porMes={};
+
+  historial.forEach(r=>{
+    const f=new Date(r.fechaISO||r.fecha);
+    const key=`${f.getFullYear()}-${f.getMonth()}`;
+    porMes[key]=(porMes[key]||0)+r.base;
+  });
+
+  // Últimos 6 meses (incluyendo el actual), en orden cronológico
+  const ahora=new Date();
+  const keys=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(ahora.getFullYear(),ahora.getMonth()-i,1);
+    keys.push({key:`${d.getFullYear()}-${d.getMonth()}`, label:meses[d.getMonth()], anio:d.getFullYear()});
+  }
+
+  const max=Math.max(...keys.map(k=>porMes[k.key]||0), 1);
+
+  document.getElementById('dash-grafica').innerHTML=keys.map(k=>{
+    const valor=porMes[k.key]||0;
+    const pct=Math.round((valor/max)*100);
+    return `
+      <div class="dash-bar-row">
+        <span class="dash-bar-label">${k.label}</span>
+        <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${pct}%;"></div></div>
+        <span class="dash-bar-valor">${valor>0?fmt(valor):'$0'}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderActividadReciente(){
+  const ultimos=historial.slice(0,5);
+  document.getElementById('dash-actividad').innerHTML=ultimos.map(r=>`
+    <div class="dash-act-row">
+      <div>
+        <div>${r.negLabel}</div>
+        <div class="dash-act-meta">${r.fecha}</div>
+      </div>
+      <div style="text-align:right;">
+        <div>${fmt(r.base)}</div>
+        <div class="dash-act-meta" style="color:var(--green);">Recibe ${fmt(r.recibe)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================
+// CALENDARIO TRIBUTARIO
+// ============================================
+const CAL_TAGS = {
+  IVA: {label:'IVA', color:'var(--blue)'},
+  RETENCION: {label:'Retención', color:'var(--red)'},
+  ICA: {label:'ICA', color:'#9c6f1e'},
+  RENTA: {label:'Renta', color:'#7c3aed'},
+  PERSONAL: {label:'Personal', color:'var(--green)'}
+};
+
+// Genera las ocurrencias de obligaciones recurrentes para un mes/año dado
+function obligacionesDelMes(anio, mes){
+  const out=[];
+  CONFIG.obligaciones.forEach(ob=>{
+    if(ob.mesAnual !== undefined){
+      if(mes===ob.mesAnual){
+        out.push({fecha:new Date(anio,mes,ob.dia), titulo:ob.titulo, tipo:ob.tipo, recurrente:true});
+      }
+      return;
+    }
+    if(ob.mesesEspecificos){
+      if(ob.mesesEspecificos.includes(mes)){
+        out.push({fecha:new Date(anio,mes,ob.dia), titulo:ob.titulo, tipo:ob.tipo, recurrente:true});
+      }
+      return;
+    }
+    if(ob.mesesPar !== undefined){
+      const esPar=(mes%2===1); // bimestral: meses pares calendario (feb,abr,jun,ago,oct,dic = índices 1,3,5,7,9,11)
+      if(ob.mesesPar===esPar){
+        out.push({fecha:new Date(anio,mes,ob.dia), titulo:ob.titulo, tipo:ob.tipo, recurrente:true});
+      }
+      return;
+    }
+    // mensual
+    out.push({fecha:new Date(anio,mes,ob.dia), titulo:ob.titulo, tipo:ob.tipo, recurrente:true});
+  });
+  return out;
+}
+
+// Todos los eventos (predeterminados + personalizados) en un rango de meses alrededor de hoy
+function eventosEnRango(anio, mes, cantidadMeses=3){
+  let eventos=[];
+  for(let i=0;i<cantidadMeses;i++){
+    const d=new Date(anio,mes+i,1);
+    eventos=eventos.concat(obligacionesDelMes(d.getFullYear(), d.getMonth()));
+  }
+  eventosCustom.forEach(ev=>{
+    eventos.push({fecha:new Date(ev.fecha+'T00:00:00'), titulo:ev.titulo, tipo:'PERSONAL', notas:ev.notas, id:ev.id, recurrente:false});
+  });
+  return eventos.sort((a,b)=>a.fecha-b.fecha);
+}
+
+function fmtFechaCorta(d){
+  return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'});
+}
+
+function renderProximos(){
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const en7=new Date(hoy); en7.setDate(hoy.getDate()+7);
+
+  const eventos=eventosEnRango(hoy.getFullYear(), hoy.getMonth(), 2)
+    .filter(e=>e.fecha>=hoy && e.fecha<=en7);
+
+  const cont=document.getElementById('cal-proximos');
+  if(!eventos.length){
+    cont.innerHTML=`<p style="font-size:13px;color:var(--text3);">No hay vencimientos en los próximos 7 días.</p>`;
+    return;
+  }
+
+  cont.innerHTML=eventos.map(e=>{
+    const tag=CAL_TAGS[e.tipo];
+    return `
+      <div class="cal-evento-row">
+        <span class="cal-evento-fecha">${fmtFechaCorta(e.fecha)}</span>
+        <div>
+          <div>${e.titulo}</div>
+          ${e.notas?`<div class="cal-evento-meta">${e.notas}</div>`:''}
+          <span class="cal-tag" style="background:${tag.color}1a;color:${tag.color};">${tag.label}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function cambiarMesCal(delta){
+  calMesActual+=delta;
+  if(calMesActual<0){ calMesActual=11; calAnioActual--; }
+  if(calMesActual>11){ calMesActual=0; calAnioActual++; }
+  renderGrillaMes();
+}
+
+function renderGrillaMes(){
+  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-mes-titulo').textContent=`${meses[calMesActual]} ${calAnioActual}`;
+
+  const eventos=eventosEnRango(calAnioActual, calMesActual, 1);
+  const eventosPorDia={};
+  eventos.forEach(e=>{
+    const key=e.fecha.getDate();
+    if(e.fecha.getMonth()===calMesActual && e.fecha.getFullYear()===calAnioActual){
+      (eventosPorDia[key]=eventosPorDia[key]||[]).push(e);
+    }
+  });
+
+  const primerDia=new Date(calAnioActual,calMesActual,1).getDay();
+  const diasEnMes=new Date(calAnioActual,calMesActual+1,0).getDate();
+  const hoy=new Date();
+  const esMesActual=hoy.getFullYear()===calAnioActual && hoy.getMonth()===calMesActual;
+
+  let html=['D','L','M','X','J','V','S'].map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  for(let i=0;i<primerDia;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let dia=1;dia<=diasEnMes;dia++){
+    const tieneEvento=!!eventosPorDia[dia];
+    const esHoy=esMesActual && hoy.getDate()===dia;
+    html+=`<div class="cal-day${esHoy?' hoy':''}${tieneEvento?' tiene-evento':''}">${dia}${tieneEvento?'<span class="cal-dot"></span>':''}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+}
+
+function renderEventosCustom(){
+  const cont=document.getElementById('cal-eventos-custom');
+  const empty=document.getElementById('cal-eventos-empty');
+  if(!eventosCustom.length){
+    cont.innerHTML='';
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+  const ordenados=[...eventosCustom].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  cont.innerHTML=ordenados.map(ev=>{
+    const f=new Date(ev.fecha+'T00:00:00');
+    return `
+      <div class="cal-evento-row">
+        <span class="cal-evento-fecha">${fmtFechaCorta(f)}</span>
+        <div style="flex:1;">
+          <div>${ev.titulo}</div>
+          ${ev.notas?`<div class="cal-evento-meta">${ev.notas}</div>`:''}
+        </div>
+        <button onclick="eliminarEvento('${ev.id}')" style="font-size:11px;padding:6px 10px;color:var(--red);">Eliminar</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderConfigRecordatorios(){
+  const opciones=[
+    {key:'dias1', label:'1 día antes'},
+    {key:'dias3', label:'3 días antes'},
+    {key:'dias7', label:'7 días antes'}
+  ];
+  document.getElementById('cal-config-recordatorio').innerHTML=opciones.map(o=>`
+    <label class="cal-recordatorio-opt">
+      <input type="checkbox" ${recordatoriosConfig[o.key]?'checked':''} onchange="toggleRecordatorio('${o.key}', this.checked)" />
+      ${o.label}
+    </label>
+  `).join('');
+}
+
+function toggleRecordatorio(key, valor){
+  recordatoriosConfig[key]=valor;
+  guardarEstado();
+}
+
+function abrirFormEvento(){
+  document.getElementById('evento-titulo').value='';
+  document.getElementById('evento-fecha').value=new Date().toISOString().slice(0,10);
+  document.getElementById('evento-notas').value='';
+  document.getElementById('evento-modal-overlay').style.display='flex';
+}
+
+function cerrarFormEvento(){
+  document.getElementById('evento-modal-overlay').style.display='none';
+}
+
+function guardarEvento(){
+  const titulo=document.getElementById('evento-titulo').value.trim();
+  const fecha=document.getElementById('evento-fecha').value;
+  const notas=document.getElementById('evento-notas').value.trim();
+  const tituloInput=document.getElementById('evento-titulo');
+  const fechaInput=document.getElementById('evento-fecha');
+  if(!titulo || !fecha){
+    tituloInput.style.borderColor = !titulo ? 'var(--red)' : '';
+    fechaInput.style.borderColor = !fecha ? 'var(--red)' : '';
+    return;
+  }
+  tituloInput.style.borderColor='';
+  fechaInput.style.borderColor='';
+  eventosCustom.push({id:'e'+Date.now()+Math.random().toString(36).slice(2,7), titulo, fecha, notas});
+  guardarEstado();
+  cerrarFormEvento();
+  renderCalendario();
+}
+
+function eliminarEvento(id){
+  mostrarConfirm('¿Eliminar este recordatorio?', ()=>{
+    eventosCustom=eventosCustom.filter(e=>e.id!==id);
+    guardarEstado();
+    renderCalendario();
+  });
+}
+
+function renderCalendario(){
+  calMesActual=new Date().getMonth();
+  calAnioActual=new Date().getFullYear();
+  renderProximos();
+  renderGrillaMes();
+  renderEventosCustom();
+  renderConfigRecordatorios();
+}
+
+function guardarEstado(){
+  try{
+    const estado={
+      historial,
+      valorInput: document.getElementById('valorInput')?.value || '',
+      retInput: document.getElementById('retInput')?.value || '',
+      tieneRet: document.getElementById('tieneRet')?.checked || false,
+      tipoOperacion: document.querySelector('input[name="tipo"]:checked')?.value || 'sd',
+      negocio: document.querySelector('input[name="negocio"]:checked')?.value || 'general',
+      tabActual: document.querySelector('.tab.active')?.id?.replace('tab-','') || 'calc',
+      eventosCustom,
+      recordatoriosConfig
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(estado));
+  }catch(e){
+    console.warn('No se pudo guardar el estado:', e);
+  }
+}
+
+function cargarEstado(){
+  let estado;
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    estado=JSON.parse(raw);
+  }catch(e){
+    console.warn('No se pudo leer el estado guardado:', e);
+    return;
+  }
+  if(!estado) return;
+
+  if(Array.isArray(estado.eventosCustom)) eventosCustom=estado.eventosCustom;
+  if(estado.recordatoriosConfig) recordatoriosConfig={...recordatoriosConfig, ...estado.recordatoriosConfig};
+
+  if(Array.isArray(estado.historial)){
+    historial=estado.historial.map(r=>{
+      if(r.id) return r;
+      // Migración de entradas antiguas sin id/negocioId/tipoOperacionId/fechaISO
+      const negFound=NEGOCIOS.find(n=>n.label===r.negLabel);
+      const tipoFound=Object.entries(CONFIG.tarifasRetencion).find(([,t])=>t.label===r.rteLabel);
+      return {
+        ...r,
+        id: 'h'+Date.now()+Math.random().toString(36).slice(2,7),
+        fechaISO: r.fechaISO || new Date().toISOString(),
+        negocioId: negFound ? negFound.id : 'general',
+        tipoOperacionId: tipoFound ? tipoFound[0] : 'sd',
+        retAcumInput: r.retAcumInput || ''
+      };
+    });
+  }
+
+  if(estado.negocio){
+    const r=document.querySelector(`input[name="negocio"][value="${estado.negocio}"]`);
+    if(r) r.checked=true;
+  }
+  if(estado.tipoOperacion){
+    const r=document.querySelector(`input[name="tipo"][value="${estado.tipoOperacion}"]`);
+    if(r) r.checked=true;
+  }
+  if(estado.valorInput){
+    const inp=document.getElementById('valorInput');
+    inp.value=estado.valorInput;
+    vBase=parsear(inp.value);
+    document.getElementById('valor-legible').textContent=vBase>0?'Valor: '+fmt(vBase)+' COP':'';
+  }
+  if(estado.tieneRet){
+    document.getElementById('tieneRet').checked=true;
+    document.getElementById('retDiv').style.display='block';
+  }
+  if(estado.retInput){
+    const inp=document.getElementById('retInput');
+    inp.value=estado.retInput;
+    vRet=parsear(inp.value);
+  }
+  if(estado.tabActual && estado.tabActual!=='calc'){
+    setTab(estado.tabActual);
+  }
+
+  window._cargandoEstado=true;
+  calcular();
+  window._cargandoEstado=false;
+}
+
+// Si el usuario ya usó la app antes, saltar la pantalla de bienvenida
+document.addEventListener('DOMContentLoaded', ()=>{
+  try{
+    if(localStorage.getItem('caltax_visitado')==='1'){
+      iniciar();
+    }
+  }catch(e){
+    console.warn('localStorage no disponible:', e);
+  }
+});
+
+</script>
+</body>
+</html>
